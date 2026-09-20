@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Eu te amo há…</title>
+
+<style>
+  /* ================= CORES (mude aqui) ================= */
+  :root {
+    --fundo: #080a24;
+    --ciano: #00c8ff;
+    --rosa: #ff69b4;
+    --brilho: rgba(96, 88, 255, .75);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: var(--fundo); }
+  body {
+    min-height: 100dvh;
+    color: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+    background:
+      radial-gradient(55% 34% at 50% 16%, rgba(70, 60, 200, .28), transparent 70%),
+      var(--fundo);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ================= FOTOS FLUTUANDO NO TOPO ================= */
+  #flutuantes {
+    position: absolute; top: 0; left: 0; right: 0;
+    height: min(38vh, 320px);
+    overflow: hidden; pointer-events: none; z-index: 0;
+  }
+  .fl {
+    position: absolute; left: 0;
+    width: var(--s); height: var(--s); object-fit: cover; border-radius: 4px;
+    opacity: .92; will-change: transform;
+    animation: voar var(--dur) linear infinite;
+  }
+  @keyframes voar {
+    from { transform: translate(-22vw, 0) rotate(var(--r0)); }
+    to   { transform: translate(112vw, var(--dy)) rotate(var(--r1)); }
+  }
+
+  /* ================= CONTEÚDO ================= */
+  main {
+    position: relative; z-index: 1;
+    max-width: 760px; margin: 0 auto;
+    padding: max(32px, env(safe-area-inset-top)) 22px max(56px, env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+  }
+
+  #foto, .foto-vazia {
+    width: min(250px, 62vw); aspect-ratio: 3 / 4;
+    border-radius: 22px;
+    box-shadow: 0 0 0 2px rgba(120, 110, 255, .35), 0 0 34px var(--brilho);
+  }
+  #foto { display: block; object-fit: cover; }
+  .foto-vazia {
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+    background: rgba(255, 255, 255, .05); font-size: .95rem; line-height: 1.5; color: #b9bce8;
+  }
+
+  h1 { margin-top: 34px; font-size: 1.75rem; font-weight: 700; }
+
+  #tempo {
+    margin-top: 20px;
+    color: var(--ciano); font-weight: 700;
+    font-size: clamp(1.1rem, 4.4vw, 1.55rem); line-height: 1.4;
+    font-variant-numeric: tabular-nums; text-wrap: balance;
+  }
+
+  .texto {
+    margin-top: 26px; max-width: 680px;
+    font-size: 1.05rem; line-height: 1.6;
+  }
+
+  .assinatura {
+    margin-top: 34px; color: var(--rosa); font-weight: 700; font-size: 1rem;
+  }
+
+  /* ================= VOLTAR ================= */
+  .voltar {
+    position: fixed; z-index: 5;
+    top: max(14px, env(safe-area-inset-top)); left: max(14px, env(safe-area-inset-left));
+    padding: 8px 14px; border-radius: 999px;
+    font-size: .85rem; color: #fff; text-decoration: none;
+    background: rgba(8, 10, 36, .72); border: 1px solid rgba(255, 255, 255, .25);
+  }
+  .voltar:hover, .voltar:focus-visible { background: #fff; color: var(--fundo); outline: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    #flutuantes { display: none; }
+  }
+</style>
+</head>
+
+<body>
+
+<a class="voltar" href="index.html">← Início</a>
+
+<div id="flutuantes" aria-hidden="true"></div>
+
+<main>
+  <img id="foto" alt="Foto" src="">
+
+  <h1>Eu te amo há:</h1>
+  <div id="tempo" role="timer" aria-label="Tempo que eu te amo"></div>
+
+  <p class="texto">
+    A cada dia que passa, meu coração se enche mais de carinho e admiração por você.
+    Cada momento tendo você, ilumina o meu mundo, e cada risada sua me faz sentir que
+    estou exatamente onde deveria estar. Você é a razão dos meus melhores pensamentos,
+    e tudo ao seu lado se torna mais bonito e significativo. Prometo te lembrar todos
+    os dias o quão linda e especial você é. Mal posso esperar pra poder te chamar de
+    minha em cada canto do mundo, em cada manhã, em cada dia.
+  </p>
+
+  <p class="assinatura">Eu te amo para sempre, <span id="nome">Maria Júlia</span>! 💙</p>
+</main>
+
+<script>
+/* =====================================================================
+   CONFIGURAÇÕES
+   ===================================================================== */
+const CONFIG = {
+  inicio: "2026-08-05T00:00:00",       // data e hora de início: ano-mês-diaThora (05/08/2026, meia-noite)
+  nome: "Maria Júlia",
+  fotoPrincipal: "fotos/fotop.jpeg",   // foto grande do centro
+  fotosFlutuantes: ["fotos/fotoz.jpeg", "fotos/fotox.jpeg", "fotos/fotoy.jpeg"],  // fotos que passam voando lá no topo
+  quantidadeFlutuantes: 9              // quantas fotinhas passam ao mesmo tempo
+};
+
+/* =====================================================================
+   CONTADOR
+   ===================================================================== */
+const INICIO = new Date(CONFIG.inicio);
+const elTempo = document.getElementById("tempo");
+
+// soma "n" meses a uma data, respeitando meses mais curtos
+function somarMeses(d, n) {
+  const r = new Date(d.getFullYear(), d.getMonth() + n, 1, d.getHours(), d.getMinutes(), d.getSeconds());
+  const ultimoDia = new Date(r.getFullYear(), r.getMonth() + 1, 0).getDate();
+  r.setDate(Math.min(d.getDate(), ultimoDia));
+  return r;
+}
+
+function decompor(ini, agora) {
+  if (agora <= ini) return { anos: 0, meses: 0, dias: 0, horas: 0, minutos: 0, segundos: 0 };
+  let m = (agora.getFullYear() - ini.getFullYear()) * 12 + (agora.getMonth() - ini.getMonth());
+  if (somarMeses(ini, m) > agora) m--;                       // ainda não completou esse mês
+  let resto = Math.floor((agora - somarMeses(ini, m)) / 1000);
+  const dias = Math.floor(resto / 86400);  resto %= 86400;
+  const horas = Math.floor(resto / 3600);  resto %= 3600;
+  const minutos = Math.floor(resto / 60);
+  return { anos: Math.floor(m / 12), meses: m % 12, dias, horas, minutos, segundos: resto % 60 };
+}
+
+const un = (n, sing, plur) => n + " " + (n === 1 ? sing : plur);
+
+function formatar(d) {
+  const partes = [];
+  if (d.anos) partes.push(un(d.anos, "ano", "anos"));
+  partes.push(
+    un(d.meses, "mês", "meses"),
+    un(d.dias, "dia", "dias"),
+    un(d.horas, "hora", "horas"),
+    un(d.minutos, "minuto", "minutos"),
+    un(d.segundos, "segundo", "segundos")
+  );
+  return partes.slice(0, -1).join(", ") + " e " + partes[partes.length - 1];
+}
+
+let ultimo = "";
+function atualizar() {
+  const t = formatar(decompor(INICIO, new Date()));
+  if (t !== ultimo) { elTempo.textContent = t; ultimo = t; }
+}
+atualizar();
+setInterval(atualizar, 250);
+
+/* =====================================================================
+   FOTO PRINCIPAL + FOTOS FLUTUANDO
+   ===================================================================== */
+document.getElementById("nome").textContent = CONFIG.nome;
+
+const foto = document.getElementById("foto");
+foto.onerror = () => {
+  const v = document.createElement("div");
+  v.className = "foto-vazia";
+  v.textContent = "Coloque a foto em: " + CONFIG.fotoPrincipal;
+  foto.replaceWith(v);
+};
+foto.src = CONFIG.fotoPrincipal;
+
+(function criarFlutuantes() {
+  const camada = document.getElementById("flutuantes");
+  const fotos = CONFIG.fotosFlutuantes;
+  if (!fotos.length) return;
+
+  for (let i = 0; i < CONFIG.quantidadeFlutuantes; i++) {
+    const img = new Image();
+    img.className = "fl";
+    img.alt = "";
+    img.onerror = () => img.remove();
+    img.src = fotos[i % fotos.length];
+
+    const tamanho = 44 + Math.random() * 40;                 // 44 a 84 px
+    const duracao = 16 + Math.random() * 16;                 // 16 a 32 s para atravessar a tela
+    const giro0 = -30 + Math.random() * 60;
+    const giro1 = giro0 + (Math.random() > .5 ? 1 : -1) * (120 + Math.random() * 180);
+
+    img.style.setProperty("--s", tamanho + "px");
+    img.style.setProperty("--dur", duracao + "s");
+    img.style.setProperty("--r0", giro0 + "deg");
+    img.style.setProperty("--r1", giro1 + "deg");
+    img.style.setProperty("--dy", (-30 + Math.random() * 60) + "px");
+    img.style.top = (Math.random() * 78) + "%";
+    img.style.animationDelay = "-" + (Math.random() * duracao) + "s";   // já começam espalhadas
+    if (i % 2) img.style.animationDirection = "reverse";                // metade vai no sentido contrário
+    camada.appendChild(img);
+  }
+})();
+</script>
+</body>
+</html>

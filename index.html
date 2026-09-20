@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Para a Maria Júlia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --indigo: #484b7e;
+    --creme: #f6f4df;
+    --fonte-cima: 'Bebas Neue', 'Oswald', Impact, sans-serif;
+    --fonte-baixo: 'Cinzel', 'Times New Roman', Georgia, serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { background: var(--indigo); -webkit-font-smoothing: antialiased; overflow: hidden; }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap;
+  }
+
+  main { display: flex; flex-direction: column; height: 100dvh; }
+
+  .opcao {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; padding: 24px; text-align: center; text-decoration: none;
+    transition: flex-grow .5s cubic-bezier(.2, .8, .2, 1);
+  }
+  .opcao:hover, .opcao:focus-visible { flex-grow: 1.4; }
+  .opcao:focus-visible { outline: 3px solid currentColor; outline-offset: -14px; }
+
+  .opcao.cima  { background: var(--indigo); color: var(--creme); animation: desce .9s cubic-bezier(.2, .8, .2, 1) both; }
+  .opcao.baixo { background: var(--creme);  color: var(--indigo); animation: sobe  .9s cubic-bezier(.2, .8, .2, 1) both; }
+
+  .opcao h2 {
+    font-family: var(--fonte-cima); font-weight: 400; text-transform: uppercase;
+    font-size: clamp(3.2rem, 13vw, 8rem); line-height: 1;
+  }
+  .opcao p {
+    font-family: var(--fonte-baixo); font-weight: 700; text-transform: uppercase;
+    font-size: clamp(.8rem, 2.8vw, 1.15rem); letter-spacing: .14em; line-height: 1.5;
+    max-width: 30ch; text-wrap: balance;
+  }
+
+  @keyframes desce { from { transform: translateY(-100%); } to { transform: none; } }
+  @keyframes sobe  { from { transform: translateY(100%); }  to { transform: none; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .opcao { animation: none !important; transition: none; }
+  }
+</style>
+</head>
+
+<body>
+<h1 class="sr-only">Escolha por onde começar</h1>
+<main>
+  <a class="opcao cima" href="declaracao.html">
+    <h2>Declaração</h2>
+    <p>Uma música, uma letra e fotos pra você</p>
+  </a>
+  <a class="opcao baixo" href="cronometro.html">
+    <h2>Cronômetro</h2>
+    <p>Quanto tempo eu já te amo, ao vivo</p>
+  </a>
+</main>
+</body>
+</html>
