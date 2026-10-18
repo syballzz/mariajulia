@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jogo da memória</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* ================= CORES E FONTES (mude aqui) ================= */
+  :root {
+    --indigo: #484b7e;
+    --indigo-fundo: #34365f;
+    --indigo-claro: #5a5d99;
+    --creme: #f6f4df;
+    --rosa: #ff8fb8;
+    --fonte-cima: 'Bebas Neue', 'Oswald', Impact, sans-serif;
+    --fonte-baixo: 'Cinzel', 'Times New Roman', Georgia, serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--indigo-fundo); color: var(--creme);
+    font-family: var(--fonte-baixo); -webkit-font-smoothing: antialiased;
+    min-height: 100dvh;
+  }
+
+  main {
+    min-height: 100dvh; display: flex; flex-direction: column; align-items: center;
+    gap: clamp(16px, 3vh, 26px);
+    padding: max(60px, calc(env(safe-area-inset-top) + 46px)) 18px max(28px, env(safe-area-inset-bottom));
+  }
+
+  .voltar {
+    position: fixed; z-index: 5; top: max(14px, env(safe-area-inset-top)); left: max(14px, env(safe-area-inset-left));
+    font-family: var(--fonte-baixo); font-weight: 700; font-size: .8rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--creme); text-decoration: none; opacity: .85;
+    padding: 8px 10px;
+  }
+  .voltar:hover, .voltar:focus-visible { opacity: 1; text-decoration: underline; outline: none; }
+
+  header { text-align: center; }
+  h1 {
+    font-family: var(--fonte-cima); font-weight: 400; text-transform: uppercase;
+    font-size: clamp(2rem, 8vw, 2.8rem); line-height: 1;
+  }
+  header p { margin-top: 6px; font-size: .8rem; letter-spacing: .1em; color: #cfcdef; }
+
+  #placar {
+    display: flex; gap: 26px; font-size: .82rem; letter-spacing: .06em; color: var(--creme);
+  }
+  #placar b { font-family: var(--fonte-baixo); color: var(--rosa); }
+
+  /* ================= TABULEIRO: 3 colunas x 4 linhas ================= */
+  #tabuleiro {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(8px, 2.4vw, 14px);
+    width: min(360px, 86vw);
+  }
+
+  .carta {
+    aspect-ratio: 3 / 4; perspective: 800px; background: none; border: 0; padding: 0; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .carta:focus-visible .face { outline: 2px solid var(--creme); outline-offset: 2px; }
+  .carta[disabled] { cursor: default; }
+
+  .miolo {
+    position: relative; width: 100%; height: 100%; text-align: center;
+    transition: transform .5s cubic-bezier(.2, .8, .2, 1); transform-style: preserve-3d;
+  }
+  .carta.virada .miolo { transform: rotateY(180deg); }
+
+  .face {
+    position: absolute; inset: 0; backface-visibility: hidden; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+  .verso {
+    background: var(--indigo-claro); border: 2px solid rgba(246, 244, 223, .25);
+  }
+  .verso::after { content: "♥"; color: rgba(246, 244, 223, .4); font-size: 1.3rem; }
+  .frente {
+    background: var(--creme); color: var(--indigo); transform: rotateY(180deg);
+    box-shadow: 0 6px 18px rgba(10, 9, 35, .25);
+  }
+  .frente img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .frente .sem-foto {
+    width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 6px; font-size: .62rem; line-height: 1.35; color: var(--indigo);
+  }
+
+  .carta.certa .frente { background: #fdf3df; box-shadow: 0 0 0 3px var(--rosa) inset; }
+  .carta.certa .miolo { animation: pulso .4s ease; }
+  @keyframes pulso { 50% { transform: rotateY(180deg) scale(1.08); } }
+
+  .carta.errada .miolo { animation: tremer .4s; }
+  @keyframes tremer {
+    20%, 60% { transform: rotateY(180deg) translateX(-6px); }
+    40%, 80% { transform: rotateY(180deg) translateX(6px); }
+  }
+
+  #reiniciar {
+    font-family: var(--fonte-baixo); font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+    font-size: .8rem; padding: 12px 22px; cursor: pointer;
+    background: transparent; color: var(--creme); border: 2px solid var(--creme); border-radius: 999px;
+  }
+  #reiniciar:hover, #reiniciar:focus-visible { background: var(--creme); color: var(--indigo); outline: none; }
+
+  /* ================= TELA DE VITÓRIA ================= */
+  #vitoria {
+    position: fixed; inset: 0; z-index: 10; display: none; align-items: center; justify-content: center;
+    background: rgba(24, 24, 54, .82); padding: 24px;
+  }
+  #vitoria.mostra { display: flex; }
+  #vitoria .cartao {
+    background: var(--creme); color: var(--indigo); border-radius: 22px; padding: 34px 28px;
+    text-align: center; max-width: 320px; box-shadow: 0 24px 60px rgba(8, 9, 30, .5);
+  }
+  #vitoria h2 {
+    font-family: var(--fonte-cima); font-weight: 400; text-transform: uppercase; font-size: 2rem;
+  }
+  #vitoria p { margin-top: 10px; font-size: .9rem; line-height: 1.5; }
+  #vitoria-jogadas { font-weight: 700; color: var(--rosa); }
+  #vitoria .botoes { margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  #vitoria button, #vitoria a {
+    font-family: var(--fonte-baixo); font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    font-size: .78rem; padding: 11px 18px; border-radius: 999px; cursor: pointer; text-decoration: none;
+  }
+  #jogar-de-novo { background: var(--indigo); color: var(--creme); border: 2px solid var(--indigo); }
+  #vitoria a { background: transparent; color: var(--indigo); border: 2px solid var(--indigo); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .miolo, .carta.certa .miolo, .carta.errada .miolo { animation: none !important; transition: transform .01s; }
+  }
+</style>
+</head>
+
+<body>
+<a class="voltar" href="inicio.html">← Início</a>
+
+<main>
+  <header>
+    <h1>Jogo da memória</h1>
+    <p>Ache os seis pares escondidos</p>
+  </header>
+
+  <div id="placar">
+    <span>Jogadas: <b id="n-jogadas">0</b></span>
+    <span>Pares: <b id="n-pares">0</b>/6</span>
+  </div>
+
+  <div id="tabuleiro" role="group" aria-label="Tabuleiro do jogo da memória"></div>
+
+  <button id="reiniciar" type="button">Embaralhar de novo</button>
+</main>
+
+<div id="vitoria">
+  <div class="cartao">
+    <h2>Parabéns Amor!</h2>
+    <p>Você encontrou tudo em <span id="vitoria-jogadas"></span> jogadas.</p>
+    <div class="botoes">
+      <button id="jogar-de-novo" type="button">Jogar de novo</button>
+      <a href="inicio.html">Início</a>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* =====================================================================
+   CONFIGURAÇÕES
+   ===================================================================== */
+const CONFIG = {
+  // 6 fotos, cada uma vira um par de cartas (6 x 2 = 12 cartas, tabuleiro 3x4).
+  // Salve as fotos na pasta "fotos" com esses nomes, ou troque os caminhos abaixo.
+  fotos: [
+    "fotos/memoria1.jpg",
+    "fotos/memoria2.jpg",
+    "fotos/memoria3.jpg",
+    "fotos/memoria4.jpg",
+    "fotos/memoria5.jpg",
+    "fotos/memoria6.jpg"
+  ]
+};
+
+/* =====================================================================
+   MONTAGEM DO TABULEIRO
+   ===================================================================== */
+const tabuleiro = document.getElementById("tabuleiro");
+const elJogadas = document.getElementById("n-jogadas");
+const elPares = document.getElementById("n-pares");
+const vitoria = document.getElementById("vitoria");
+const vitoriaJogadas = document.getElementById("vitoria-jogadas");
+
+let viradas = [];
+let paresAchados = 0;
+let jogadas = 0;
+let travado = false;
+
+function embaralhar(lista) {
+  const a = lista.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function montarJogo() {
+  tabuleiro.innerHTML = "";
+  viradas = []; paresAchados = 0; jogadas = 0; travado = false;
+  elJogadas.textContent = "0";
+  elPares.textContent = "0";
+  vitoria.classList.remove("mostra");
+
+  const cartas = embaralhar([...CONFIG.fotos, ...CONFIG.fotos]);
+
+  cartas.forEach((foto, i) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "carta";
+    b.dataset.foto = foto;
+    b.setAttribute("aria-label", "Carta virada para baixo");
+    b.innerHTML = `
+      <div class="miolo">
+        <div class="face verso"></div>
+        <div class="face frente"></div>
+      </div>`;
+
+    const frente = b.querySelector(".frente");
+    const img = new Image();
+    img.alt = "";
+    img.onerror = () => {
+      const n = CONFIG.fotos.indexOf(foto) + 1;
+      frente.innerHTML = `<div class="sem-foto">Coloque a foto em:<br>${foto}</div>`;
+    };
+    img.src = foto;
+    frente.appendChild(img);
+
+    b.addEventListener("click", () => virar(b));
+    tabuleiro.appendChild(b);
+  });
+}
+
+function virar(carta) {
+  if (travado) return;
+  if (carta.classList.contains("virada") || carta.classList.contains("certa")) return;
+
+  carta.classList.add("virada");
+  carta.setAttribute("aria-label", "Carta virada para cima");
+  viradas.push(carta);
+
+  if (viradas.length === 2) {
+    jogadas++;
+    elJogadas.textContent = jogadas;
+    travado = true;
+
+    const [a, c] = viradas;
+    if (a.dataset.foto === c.dataset.foto) {
+      setTimeout(() => {
+        a.classList.add("certa"); c.classList.add("certa");
+        a.disabled = true; c.disabled = true;
+        viradas = []; travado = false;
+        paresAchados++;
+        elPares.textContent = paresAchados;
+        if (paresAchados === CONFIG.fotos.length) mostrarVitoria();
+      }, 260);
+    } else {
+      a.classList.add("errada"); c.classList.add("errada");
+      setTimeout(() => {
+        a.classList.remove("virada", "errada");
+        c.classList.remove("virada", "errada");
+        a.setAttribute("aria-label", "Carta virada para baixo");
+        c.setAttribute("aria-label", "Carta virada para baixo");
+        viradas = []; travado = false;
+      }, 850);
+    }
+  }
+}
+
+function mostrarVitoria() {
+  vitoriaJogadas.textContent = jogadas;
+  setTimeout(() => vitoria.classList.add("mostra"), 450);
+}
+
+document.getElementById("reiniciar").addEventListener("click", montarJogo);
+document.getElementById("jogar-de-novo").addEventListener("click", montarJogo);
+
+montarJogo();
+</script>
+</body>
+</html>

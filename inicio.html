@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Para a Maria Julia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* ================= CORES E FONTES (mude aqui) ================= */
+  :root {
+    --indigo: #484b7e;
+    --indigo-fundo: #34365f;
+    --creme: #f6f4df;
+    --rosa: #ff8fb8;
+    --fonte-cima: 'Bebas Neue', 'Oswald', Impact, sans-serif;
+    --fonte-baixo: 'Cinzel', 'Times New Roman', Georgia, serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background:
+      radial-gradient(60% 40% at 50% 0%, rgba(255, 143, 184, .16), transparent 70%),
+      var(--indigo-fundo);
+    color: var(--creme);
+    font-family: var(--fonte-baixo);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100dvh;
+  }
+
+  main {
+    min-height: 100dvh; display: flex; flex-direction: column; align-items: center;
+    gap: clamp(26px, 5vh, 44px);
+    padding: max(48px, env(safe-area-inset-top)) 22px max(40px, env(safe-area-inset-bottom));
+  }
+
+  header { text-align: center; }
+  h1 {
+    font-family: var(--fonte-cima); font-weight: 400; text-transform: uppercase;
+    font-size: clamp(2.4rem, 9vw, 3.6rem); line-height: 1;
+  }
+  .coracoes { color: var(--rosa); font-size: .9em; letter-spacing: .3em; }
+  header p {
+    margin-top: 10px; font-size: .78rem; letter-spacing: .18em; text-transform: uppercase;
+    color: #cfcdef;
+  }
+
+  /* ================= CARTÕES ================= */
+  .menu {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: clamp(14px, 3vw, 22px);
+    max-width: 640px; width: 100%;
+  }
+
+  .cartao {
+    flex: 1 1 160px; max-width: 220px;
+    background: var(--creme); color: var(--indigo); text-decoration: none;
+    border-radius: 22px; padding: clamp(20px, 4vw, 28px) 16px;
+    display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;
+    box-shadow: 0 14px 34px rgba(10, 9, 35, .35);
+    transition: transform .25s cubic-bezier(.2, .8, .2, 1), box-shadow .25s;
+  }
+  .cartao:hover, .cartao:focus-visible {
+    transform: translateY(-6px); box-shadow: 0 22px 44px rgba(10, 9, 35, .45); outline: none;
+  }
+  .cartao:focus-visible { outline: 2px solid var(--creme); outline-offset: 3px; }
+
+  .icone {
+    width: 56px; height: 56px; border-radius: 50%; background: var(--indigo); color: var(--creme);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .icone svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+  .cartao h2 {
+    font-family: var(--fonte-baixo); font-weight: 700; text-transform: uppercase;
+    font-size: 1rem; letter-spacing: .04em;
+  }
+  .cartao p {
+    font-size: .76rem; line-height: 1.4; color: #5c5f93;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cartao { transition: none; }
+  }
+</style>
+</head>
+
+<body>
+<main>
+  <header>
+    <h1>Para a minha parreirinha <span class="coracoes">♥</span></h1>
+    <p>a pessoa que eu mais amo!</p>
+  </header>
+
+  <nav class="menu" aria-label="Menu">
+    <a class="cartao" href="declaracao.html">
+      <span class="icone" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>
+      </span>
+      <h2>Declaração</h2>
+      <p>Uma música, uma letra e fotos pra você</p>
+    </a>
+
+    <a class="cartao" href="cronometro.html">
+      <span class="icone" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      </span>
+      <h2>Cronômetro</h2>
+      <p>Quanto tempo eu já te amo, ao vivo</p>
+    </a>
+
+    <a class="cartao" href="jogo.html">
+      <span class="icone" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      </span>
+      <h2>Jogo da memória</h2>
+      <p>Ache os pares de velhos gostosos</p>
+    </a>
+
+    <a class="cartao" href="memorias.html">
+      <span class="icone" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="14" height="16" rx="2"/><rect x="8" y="2" width="14" height="16" rx="2" fill="var(--indigo)" stroke="var(--creme)"/></svg>
+      </span>
+      <h2>Momentos</h2>
+      <p>Nossas fotos, uma a uma</p>
+    </a>
+
+    <a class="cartao" href="quiz.html">
+      <span class="icone" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.6-2.5 2-2.5 3.6"/><circle cx="12" cy="16.6" r=".4" fill="currentColor" stroke="none"/></svg>
+      </span>
+      <h2>Quiz</h2>
+      <p>Perguntinhas, rs</p>
+    </a>
+  </nav>
+</main>
+</body>
+</html>

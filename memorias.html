@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nossas memórias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* ================= CORES E FONTES (mude aqui) ================= */
+  :root {
+    --indigo: #484b7e;
+    --fundo: #121226;
+    --creme: #f6f4df;
+    --rosa: #ff8fb8;
+    --fonte-cima: 'Bebas Neue', 'Oswald', Impact, sans-serif;
+    --fonte-baixo: 'Cinzel', 'Times New Roman', Georgia, serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overscroll-behavior: none; }
+  body {
+    background: var(--fundo); color: var(--creme);
+    font-family: var(--fonte-baixo); -webkit-font-smoothing: antialiased;
+    overflow: hidden; -webkit-tap-highlight-color: transparent;
+  }
+
+  #palco { position: fixed; inset: 0; height: 100dvh; }
+
+  /* ================= BARRA DE PROGRESSO ================= */
+  #barras {
+    position: absolute; z-index: 6; top: max(10px, env(safe-area-inset-top)); left: 10px; right: 10px;
+    display: flex; gap: 5px;
+  }
+  .segmento {
+    flex: 1; height: 3px; border-radius: 3px; background: rgba(255, 255, 255, .28); overflow: hidden;
+  }
+  .segmento .preenche { height: 100%; width: 0; background: var(--creme); }
+  .segmento.feito .preenche { width: 100%; }
+  .segmento.ativo .preenche { animation: encher linear forwards; animation-duration: var(--duracao); }
+  .segmento.ativo.pausado .preenche { animation-play-state: paused; }
+  @keyframes encher { from { width: 0; } to { width: 100%; } }
+
+  /* ================= TOPO: fechar ================= */
+  #fechar {
+    position: absolute; z-index: 6; top: max(22px, calc(env(safe-area-inset-top) + 14px)); right: 14px;
+    width: 34px; height: 34px; border-radius: 50%; border: 0; background: rgba(0, 0, 0, .35); color: var(--creme);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  #fechar svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+  #fechar:focus-visible { outline: 2px solid var(--creme); }
+
+  /* ================= SLIDES ================= */
+  .slide {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity .25s;
+    background: #000;
+  }
+  .slide.ativo { opacity: 1; pointer-events: auto; }
+  .slide img {
+    max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain;
+    user-select: none; -webkit-user-drag: none;
+  }
+  .slide .sem-foto {
+    text-align: center; padding: 30px; font-size: .9rem; line-height: 1.6; color: var(--creme);
+  }
+
+  .legenda {
+    position: absolute; left: 0; right: 0; bottom: max(30px, env(safe-area-inset-bottom));
+    text-align: center; padding: 0 28px;
+    font-weight: 700; letter-spacing: .04em; font-size: 1rem; text-wrap: balance;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, .6);
+  }
+
+  /* zonas de toque, invisíveis */
+  #zona-esquerda, #zona-direita {
+    position: absolute; top: 0; bottom: 0; z-index: 4; -webkit-tap-highlight-color: transparent;
+  }
+  #zona-esquerda { left: 0; width: 35%; }
+  #zona-direita { right: 0; width: 65%; }
+
+  /* ================= TELA DE FIM ================= */
+  #fim {
+    position: fixed; inset: 0; z-index: 10; display: none; align-items: center; justify-content: center;
+    background: rgba(10, 10, 26, .92); padding: 24px; text-align: center;
+  }
+  #fim.mostra { display: flex; }
+  #fim .cartao {
+    background: var(--creme); color: var(--indigo); border-radius: 22px; padding: 34px 28px;
+    max-width: 320px; box-shadow: 0 24px 60px rgba(8, 9, 30, .5);
+  }
+  #fim h2 { font-family: var(--fonte-cima); font-weight: 400; text-transform: uppercase; font-size: 1.8rem; }
+  #fim p { margin-top: 8px; font-size: .9rem; line-height: 1.5; }
+  #fim .botoes { margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  #fim button, #fim a {
+    font-family: var(--fonte-baixo); font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    font-size: .78rem; padding: 11px 18px; border-radius: 999px; cursor: pointer; text-decoration: none;
+  }
+  #rever { background: var(--indigo); color: var(--creme); border: 2px solid var(--indigo); }
+  #fim a { background: transparent; color: var(--indigo); border: 2px solid var(--indigo); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .segmento.ativo .preenche { animation: none; width: 100%; }
+    .slide { transition: none; }
+  }
+</style>
+</head>
+
+<body>
+<div id="palco">
+  <div id="barras"></div>
+  <button id="fechar" type="button" aria-label="Fechar e voltar ao início">
+    <svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg>
+  </button>
+
+  <div id="slides"></div>
+
+  <div id="zona-esquerda" aria-hidden="true"></div>
+  <div id="zona-direita" aria-hidden="true"></div>
+</div>
+
+<div id="fim">
+  <div class="cartao">
+    <h2>Até aqui, amor</h2>
+    <p>E vem muito mais por aí.</p>
+    <div class="botoes">
+      <button id="rever" type="button">Rever de novo</button>
+      <a href="inicio.html">Início</a>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   CONFIGURAÇÕES
+   ===================================================================== */
+const CONFIG = {
+  // Cada item é uma foto da sua história. "legenda" é opcional — deixe "" se não quiser texto.
+  fotos: [
+    { src: "fotos/momento1.jpg", legenda: "" },
+    { src: "fotos/momento2.jpg", legenda: "" },
+    { src: "fotos/momento3.jpg", legenda: "" },
+    { src: "fotos/momento4.jpg", legenda: "" },
+    { src: "fotos/momento5.jpg", legenda: "" }
+  ],
+  segundosPorFoto: 5
+};
+
+/* =====================================================================
+   MONTAGEM
+   ===================================================================== */
+const barras = document.getElementById("barras");
+const slidesEl = document.getElementById("slides");
+const fimEl = document.getElementById("fim");
+
+CONFIG.fotos.forEach(() => {
+  const seg = document.createElement("div");
+  seg.className = "segmento";
+  seg.innerHTML = '<div class="preenche"></div>';
+  seg.style.setProperty("--duracao", CONFIG.segundosPorFoto + "s");
+  barras.appendChild(seg);
+});
+const segmentos = [...barras.children];
+
+CONFIG.fotos.forEach((item) => {
+  const div = document.createElement("div");
+  div.className = "slide";
+
+  const img = new Image();
+  img.alt = "";
+  img.onerror = () => {
+    div.innerHTML = `<div class="sem-foto">Coloque a foto em:<br><b>${item.src}</b></div>`;
+  };
+  img.src = item.src;
+  div.appendChild(img);
+
+  if (item.legenda) {
+    const p = document.createElement("p");
+    p.className = "legenda";
+    p.textContent = item.legenda;
+    div.appendChild(p);
+  }
+  slidesEl.appendChild(div);
+});
+const slides = [...slidesEl.children];
+
+/* =====================================================================
+   NAVEGAÇÃO
+   ===================================================================== */
+let atual = 0;
+let terminou = false;
+
+function mostrar(i) {
+  if (i < 0) i = 0;
+  if (i >= slides.length) { return acabou(); }
+
+  atual = i;
+  slides.forEach((s, k) => s.classList.toggle("ativo", k === i));
+
+  segmentos.forEach((seg, k) => {
+    seg.classList.remove("ativo", "pausado", "feito");
+    seg.querySelector(".preenche").style.animation = "none";
+    if (k < i) seg.classList.add("feito");
+  });
+  // força o navegador a reiniciar a animação do segmento atual
+  const segAtual = segmentos[i];
+  void segAtual.offsetWidth;
+  segAtual.querySelector(".preenche").style.animation = "";
+  segAtual.classList.add("ativo");
+}
+
+function proxima() { mostrar(atual + 1); }
+function anterior() { mostrar(atual - 1); }
+
+function acabou() {
+  terminou = true;
+  segmentos.forEach((seg) => { seg.classList.remove("ativo"); seg.classList.add("feito"); });
+  slides.forEach((s) => s.classList.remove("ativo"));
+  fimEl.classList.add("mostra");
+}
+
+document.getElementById("barras").addEventListener("animationend", (e) => {
+  if (e.target.closest(".segmento").classList.contains("ativo")) proxima();
+});
+
+function pausar() {
+  const seg = segmentos[atual];
+  if (seg) seg.classList.add("pausado");
+}
+function retomar() {
+  const seg = segmentos[atual];
+  if (seg) seg.classList.remove("pausado");
+}
+
+/* toque: segurar pausa, toque rápido navega */
+let inicioToque = 0;
+function aoPressionar() { inicioToque = Date.now(); pausar(); }
+function aoSoltar(navegar) {
+  const duracao = Date.now() - inicioToque;
+  retomar();
+  if (duracao < 280) navegar();
+}
+
+const esq = document.getElementById("zona-esquerda");
+const dir = document.getElementById("zona-direita");
+
+[esq, dir].forEach((zona) => {
+  zona.addEventListener("pointerdown", aoPressionar);
+});
+esq.addEventListener("pointerup", () => aoSoltar(anterior));
+dir.addEventListener("pointerup", () => aoSoltar(proxima));
+[esq, dir].forEach((zona) => {
+  zona.addEventListener("pointercancel", retomar);
+  zona.addEventListener("pointerleave", retomar);
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight") proxima();
+  if (e.key === "ArrowLeft") anterior();
+  if (e.key === "Escape") location.href = "inicio.html";
+});
+
+document.getElementById("fechar").addEventListener("click", () => { location.href = "inicio.html"; });
+document.getElementById("rever").addEventListener("click", () => {
+  fimEl.classList.remove("mostra");
+  terminou = false;
+  mostrar(0);
+});
+
+if (slides.length) mostrar(0);
+else acabou();
+</script>
+</body>
+</html>

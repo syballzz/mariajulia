@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pra você</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* ================= CORES E FONTES (mude aqui) ================= */
+  :root {
+    --indigo: #484b7e;
+    --indigo-fundo: #3a3d69;
+    --creme: #f6f4df;
+    --fonte-cima: 'Bebas Neue', 'Oswald', Impact, sans-serif;
+    --fonte-baixo: 'Cinzel', 'Times New Roman', Georgia, serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--indigo);
+    color: var(--creme);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    font-family: var(--fonte-baixo);
+  }
+
+  /* ================= TELA INICIAL ================= */
+  #inicio {
+    position: fixed; inset: 0; z-index: 50;
+    display: flex; flex-direction: column;
+  }
+  #inicio .metade {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 24px;
+  }
+  #inicio .cima { background: var(--indigo); }
+  #inicio .baixo { background: var(--creme); }
+  #inicio h1 {
+    font-family: var(--fonte-cima); font-weight: 400;
+    font-size: clamp(2.6rem, 10vw, 6.5rem); line-height: 1;
+    color: var(--creme); text-transform: uppercase;
+  }
+  #btn-comecar {
+    font-family: var(--fonte-baixo); font-weight: 700;
+    font-size: clamp(1rem, 3.4vw, 1.5rem); letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--indigo); background: transparent;
+    border: 2px solid var(--indigo); padding: 16px 30px; cursor: pointer;
+    transition: background .2s, color .2s;
+  }
+  #btn-comecar:hover, #btn-comecar:focus-visible { background: var(--indigo); color: var(--creme); outline: none; }
+  #inicio.some { opacity: 0; pointer-events: none; transition: opacity .8s; }
+
+  /* ================= LINKS DE VOLTAR ================= */
+  .voltar {
+    position: absolute; top: max(14px, env(safe-area-inset-top)); left: max(16px, env(safe-area-inset-left));
+    font-family: var(--fonte-baixo); font-weight: 700; font-size: .8rem; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--creme); text-decoration: none; opacity: .85; padding: 8px 4px;
+  }
+  .voltar:hover, .voltar:focus-visible { opacity: 1; text-decoration: underline; outline: none; }
+  #voltar-fim {
+    position: fixed; z-index: 30; left: 50%;
+    bottom: calc(max(28px, env(safe-area-inset-bottom)) + 68px); transform: translateX(-50%); display: none;
+    font-family: var(--fonte-baixo); font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+    font-size: .95rem; padding: 14px 26px; text-decoration: none; white-space: nowrap;
+    background: var(--indigo); color: var(--creme); border: 2px solid var(--creme);
+  }
+  #voltar-fim:hover, #voltar-fim:focus-visible { background: var(--creme); color: var(--indigo); outline: none; }
+
+  /* ================= PALCO ================= */
+  #palco { position: fixed; inset: 0; height: 100dvh; }
+  .slide { position: absolute; inset: 0; opacity: 0; transition: opacity .9s ease; }
+  .slide.entra { opacity: 1; }
+
+  /* ---------- Letra: duas metades ---------- */
+  .slide.letra { display: flex; flex-direction: column; }
+  .slide.letra .metade {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    padding: 5vh clamp(20px, 6vw, 80px); text-align: center;
+  }
+  .slide.letra .cima { background: var(--indigo); color: var(--creme); }
+  .slide.letra .baixo { background: var(--creme); color: var(--indigo); }
+  .slide.letra .cima p {
+    font-family: var(--fonte-cima); text-transform: uppercase;
+    font-size: clamp(2.3rem, 8.4vw, 6.4rem); line-height: 1.02; letter-spacing: .01em;
+    text-wrap: balance;
+  }
+  .slide.letra .baixo p {
+    font-family: var(--fonte-baixo); font-weight: 700; text-transform: uppercase;
+    font-size: clamp(1.4rem, 5.2vw, 4rem); line-height: 1.2; letter-spacing: .1em;
+    text-wrap: balance;
+  }
+  /* Efeito de digitação: cada letra ocupa o seu lugar desde o início (o texto não "pula"),
+     mas só fica visível na hora certa. O atraso de cada letra é definido no JavaScript. */
+  .slide.letra .palavra { display: inline-block; white-space: nowrap; }
+  .slide.letra .ch { opacity: 0; }
+  .slide.letra.entra .ch { opacity: 1; transition: opacity .05s linear; }
+
+  /* ---------- Foto: polaroid ---------- */
+  .slide.foto {
+    display: flex; align-items: center; justify-content: center;
+    background: var(--indigo-fundo); overflow: hidden;
+  }
+  .slide.foto .fundo {
+    position: absolute; inset: -30px; background-size: cover; background-position: center;
+    filter: blur(28px) saturate(.8); opacity: .45; transform: scale(1.1);
+  }
+  .slide.foto figure {
+    position: relative; background: var(--creme);
+    padding: clamp(10px, 2.4vw, 18px) clamp(10px, 2.4vw, 18px) 0;
+    max-width: min(88vw, 560px);
+    box-shadow: 0 30px 70px rgba(10, 10, 40, .55);
+    transform: scale(.94) rotate(-2.5deg);
+    transition: transform 1.4s cubic-bezier(.2, .8, .2, 1);
+  }
+  .slide.foto.entra figure { transform: scale(1) rotate(-1deg); }
+  .slide.foto .moldura { overflow: hidden; background: #d9d6c0; }
+  .slide.foto img {
+    display: block; width: 100%; max-height: 62dvh; object-fit: cover;
+    animation: zoom 14s ease-out forwards;
+  }
+  @keyframes zoom { from { transform: scale(1); } to { transform: scale(1.07); } }
+  .slide.foto figcaption {
+    font-family: var(--fonte-baixo); font-weight: 700; color: var(--indigo);
+    text-align: center; letter-spacing: .1em; text-transform: uppercase;
+    font-size: clamp(.9rem, 3vw, 1.3rem);
+    min-height: clamp(44px, 9vw, 64px); display: flex; align-items: center; justify-content: center;
+    padding: 8px 4px;
+  }
+  .foto-vazia {
+    width: min(70vw, 380px); aspect-ratio: 3 / 4;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    padding: 24px; font-family: var(--fonte-baixo); font-size: .95rem; line-height: 1.5;
+    color: var(--indigo);
+  }
+
+  /* ================= CONTROLES ================= */
+  #controle {
+    position: fixed; z-index: 20; right: max(16px, env(safe-area-inset-right));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    width: 46px; height: 46px; border-radius: 50%; border: 0; cursor: pointer;
+    background: rgba(246, 244, 223, .85); color: var(--indigo);
+    display: none; align-items: center; justify-content: center;
+    opacity: .55; transition: opacity .2s;
+  }
+  #controle:hover, #controle:focus-visible { opacity: 1; outline: 2px solid var(--creme); }
+  #controle svg { width: 20px; height: 20px; fill: currentColor; }
+
+  #fim {
+    position: fixed; z-index: 30; left: 50%; bottom: max(28px, env(safe-area-inset-bottom));
+    transform: translateX(-50%); display: none;
+    font-family: var(--fonte-baixo); font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+    font-size: .95rem; padding: 14px 26px; cursor: pointer;
+    background: var(--indigo); color: var(--creme); border: 2px solid var(--creme);
+  }
+  #fim:focus-visible, #fim:hover { background: var(--creme); color: var(--indigo); outline: none; }
+
+  #aviso {
+    position: fixed; z-index: 60; top: max(14px, env(safe-area-inset-top)); left: 50%;
+    transform: translateX(-50%); max-width: 90vw;
+    background: var(--creme); color: var(--indigo); font: 600 .9rem/1.4 system-ui, sans-serif;
+    padding: 10px 16px; display: none; text-align: center;
+  }
+
+  /* ================= MODO SINCRONIZAR (#sync) ================= */
+  #sync {
+    position: fixed; z-index: 70; left: 0; right: 0; bottom: 0; display: none;
+    background: rgba(20, 20, 45, .94); color: #fff; padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+    font: 500 .95rem/1.45 system-ui, sans-serif;
+  }
+  #sync .linha { max-width: 720px; margin: 0 auto; }
+  #sync b { color: #ffd479; }
+  #sync button {
+    margin-top: 10px; width: 100%; padding: 16px; font: 700 1.05rem system-ui, sans-serif;
+    background: var(--creme); color: var(--indigo); border: 0; cursor: pointer;
+  }
+  #sync textarea {
+    width: 100%; height: 34dvh; margin-top: 10px; padding: 10px;
+    font: .8rem/1.4 ui-monospace, Menlo, monospace; background: #fff; color: #111; border: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slide, .slide.letra .ch, .slide.foto figure { transition-duration: .01s !important; transition-delay: 0s !important; }
+    .slide.foto img { animation: none; }
+  }
+</style>
+</head>
+
+<body>
+
+<!-- Tela inicial: o navegador só deixa tocar música depois de um toque -->
+<div id="inicio">
+  <a class="voltar" href="index.html">← Início</a>
+  <div class="metade cima"><h1 id="titulo-inicio"></h1></div>
+  <div class="metade baixo"><button id="btn-comecar" type="button"></button></div>
+</div>
+
+<div id="palco" aria-live="polite"></div>
+
+<button id="controle" type="button" aria-label="Pausar ou continuar"></button>
+<button id="fim" type="button">Ver de novo</button>
+<a id="voltar-fim" href="index.html">Voltar ao início</a>
+<div id="aviso" role="status"></div>
+
+<div id="sync"><div class="linha" id="sync-conteudo"></div></div>
+
+<audio id="audio" preload="auto"></audio>
+
+<script>
+/* =====================================================================
+   1) CONFIGURAÇÕES
+   ===================================================================== */
+const CONFIG = {
+  musica: "musica/amor.mp3",          // coloque o arquivo da música nessa pasta, com esse nome
+  tituloInicio: "Para o meu amor.",     // texto grande da tela inicial
+  textoBotao: "Toque para começar",
+  velocidadeDigitacao: 0.12         // segundos por letra (menor = mais rápido)
+};
+
+/* =====================================================================
+   2) A HISTÓRIA: letra + fotos, cada uma com o segundo em que aparece (t)
+
+   type "letra": top = linha de cima (fundo azul) | bottom = linha de baixo (fundo creme)
+   type "foto" : src = caminho da foto | legenda = texto embaixo da foto (opcional)
+
+   Os tempos abaixo são só de exemplo. Para acertar de verdade,
+   abra o site com  #sync  no final do endereço (veja o passo a passo).
+   Mantenha os slides em ordem crescente de "t".
+   ===================================================================== */
+const SLIDES = [
+  { t: 0,   type: "letra", top: "Eu quero te AMAR", bottom: "Quero te mostrar" },
+  { t: 5.5,   type: "letra", top: "Todo esse amor e mais",         bottom: "PORQUE VOCÊ É..." },
+  { t: 10.5,  type: "foto",  src: "fotos/foto1.jpeg", legenda: "PERFEITA!" },
+  { t: 12,  type: "letra", top: "Seu corpo lindo,",       bottom: "que é tão belo" },
+  { t: 17,  type: "letra", top: "E esses",           bottom: "Olhinhos..." },
+  { t: 20,  type: "foto",  src: "fotos/foto2.jpeg", legenda: "Nem preciso dizer mais nada." },
+  { t: 42,  type: "letra", top: "Última linha de cima",          bottom: "Última linha de baixo" }
+];
+
+/* =====================================================================
+   3) MOTOR DO SITE (não precisa mexer daqui pra baixo)
+   ===================================================================== */
+const $ = (id) => document.getElementById(id);
+const audio = $("audio");
+const palco = $("palco");
+const SYNC = location.hash === "#sync";
+
+let atual = -1, rodando = false, semSom = false, inicioRelogio = 0, terminou = false;
+
+$("titulo-inicio").textContent = CONFIG.tituloInicio;
+$("btn-comecar").textContent = SYNC ? "Começar a sincronizar" : CONFIG.textoBotao;
+audio.src = CONFIG.musica;
+
+const ICONE_PAUSE = '<svg viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>';
+const ICONE_PLAY  = '<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>';
+
+function el(tag, classe, texto) {
+  const e = document.createElement(tag);
+  if (classe) e.className = classe;
+  if (texto !== undefined) e.textContent = texto;
+  return e;
+}
+
+function aviso(msg, ms = 6000) {
+  const a = $("aviso");
+  a.textContent = msg; a.style.display = "block";
+  clearTimeout(aviso._t);
+  aviso._t = setTimeout(() => (a.style.display = "none"), ms);
+}
+
+// Relógio: usa a música; se ela não carregar, roda em silêncio para você conseguir pré-visualizar.
+function relogio() {
+  return semSom ? (performance.now() - inicioRelogio) / 1000 : audio.currentTime;
+}
+
+/* ---------- efeito de digitação ----------
+   Quebra o texto em palavras e letras e dá a cada letra um atraso crescente.
+   Devolve o instante (em segundos) em que a última letra termina de aparecer. */
+function digitar(p, texto, inicio) {
+  const vel = CONFIG.velocidadeDigitacao;
+  let n = 0;
+  p.setAttribute("aria-label", texto);
+  const palavras = texto.split(" ");
+  palavras.forEach((palavra, k) => {
+    const w = el("span", "palavra");
+    w.setAttribute("aria-hidden", "true");
+    for (const c of palavra) {
+      const s = el("span", "ch", c);
+      s.style.transitionDelay = (inicio + n * vel).toFixed(2) + "s";
+      w.appendChild(s);
+      n++;
+    }
+    p.appendChild(w);
+    if (k < palavras.length - 1) { p.appendChild(document.createTextNode(" ")); n++; }
+  });
+  return inicio + n * vel;
+}
+
+/* ---------- monta cada tipo de slide ---------- */
+function criarSlide(s) {
+  const sec = el("section", "slide " + s.type);
+
+  if (s.type === "letra") {
+    const cima = el("div", "metade cima");
+    const pCima = el("p");
+    const fimCima = digitar(pCima, s.top || "", 0.3);           // começa 0,3 s depois do slide entrar
+    cima.appendChild(pCima);
+
+    const baixo = el("div", "metade baixo");
+    const pBaixo = el("p");
+    digitar(pBaixo, s.bottom || "", fimCima + 0.4);             // começa 0,4 s depois de a de cima terminar
+    baixo.appendChild(pBaixo);
+
+    sec.append(cima, baixo);
+  }
+
+  if (s.type === "foto") {
+    const fundo = el("div", "fundo");
+    fundo.style.backgroundImage = `url("${s.src}")`;
+    const fig = el("figure");
+    const moldura = el("div", "moldura");
+    const img = new Image();
+    img.alt = s.legenda || "Foto";
+    img.src = s.src;
+    img.onerror = () => {
+      img.remove();
+      moldura.appendChild(el("div", "foto-vazia", "Foto não encontrada. Coloque o arquivo em: " + s.src));
+    };
+    moldura.appendChild(img);
+    fig.append(moldura, el("figcaption", "", s.legenda || ""));
+    sec.append(fundo, fig);
+  }
+  return sec;
+}
+
+function mostrar(i) {
+  const novo = criarSlide(SLIDES[i]);
+  palco.appendChild(novo);
+  void novo.offsetWidth;                       // força o navegador a registrar o estado inicial
+  requestAnimationFrame(() => novo.classList.add("entra"));
+
+  palco.querySelectorAll(".slide").forEach((velho) => {
+    if (velho !== novo && !velho.dataset.saindo) {
+      velho.dataset.saindo = "1";
+      velho.classList.remove("entra");
+      setTimeout(() => velho.remove(), 1000);
+    }
+  });
+  atual = i;
+}
+
+/* ---------- loop principal: escolhe o slide pelo tempo da música ---------- */
+function loop() {
+  if (terminou) return;
+  const t = relogio();
+  let idx = -1;
+  for (let i = 0; i < SLIDES.length; i++) { if (t >= SLIDES[i].t) idx = i; else break; }
+  if (idx >= 0 && idx !== atual) mostrar(idx);
+
+  if (semSom && t > SLIDES[SLIDES.length - 1].t + 8) { acabou(); return; }
+  requestAnimationFrame(loop);
+}
+
+function acabou() {
+  terminou = true;
+  $("controle").style.display = "none";
+  $("fim").style.display = "block";
+  $("voltar-fim").style.display = "block";
+}
+
+audio.addEventListener("ended", acabou);
+
+$("fim").addEventListener("click", () => {
+  $("fim").style.display = "none";
+  $("voltar-fim").style.display = "none";
+  terminou = false; atual = -1;
+  palco.innerHTML = "";
+  audio.currentTime = 0;
+  audio.play();
+  $("controle").style.display = "flex";
+  loop();
+});
+
+/* ---------- botão de pausar ---------- */
+const ctl = $("controle");
+ctl.innerHTML = ICONE_PAUSE;
+ctl.addEventListener("click", () => {
+  if (semSom) return;
+  if (audio.paused) { audio.play(); ctl.innerHTML = ICONE_PAUSE; }
+  else { audio.pause(); ctl.innerHTML = ICONE_PLAY; }
+});
+
+/* ---------- começar ---------- */
+$("btn-comecar").addEventListener("click", async () => {
+  $("inicio").classList.add("some");
+  setTimeout(() => ($("inicio").style.display = "none"), 900);
+
+  // já deixa as fotos carregando
+  SLIDES.filter((s) => s.type === "foto").forEach((s) => { const i = new Image(); i.src = s.src; });
+
+  try {
+    await audio.play();
+  } catch (e) {
+    semSom = true;
+    inicioRelogio = performance.now();
+    aviso("Não achei a música em “" + CONFIG.musica + "”. Rodando sem som só para pré-visualizar.");
+  }
+
+  if (SYNC) return iniciarSync();
+  if (!semSom) ctl.style.display = "flex";
+  loop();
+});
+
+/* =====================================================================
+   4) MODO SINCRONIZAR  (abra o site com #sync no final)
+   Toque em "Marcar" na hora em que cada parte começa na música.
+   No fim, ele gera o bloco SLIDES pronto para você colar no código.
+   ===================================================================== */
+function iniciarSync() {
+  const painel = $("sync"), box = $("sync-conteudo");
+  painel.style.display = "block";
+  const marcados = SLIDES.map((s) => ({ ...s }));
+  let i = 0;
+
+  function resumo(s) {
+    return s.type === "letra" ? "“" + (s.top || "") + " / " + (s.bottom || "") + "”" : "📷 foto (" + s.src + ")";
+  }
+
+  function desenharPasso() {
+    if (i >= marcados.length) return desenharResultado();
+    box.innerHTML = "";
+    const p = el("div");
+    p.innerHTML = "<b>Parte " + (i + 1) + " de " + marcados.length + ".</b> Toque em Marcar (ou aperte Espaço) assim que isto começar na música:";
+    const q = el("div", "", resumo(marcados[i]));
+    q.style.cssText = "margin-top:6px;font-style:italic;opacity:.9";
+    const b = el("button", "", "Marcar agora");
+    b.type = "button";
+    b.addEventListener("click", marcar);
+    box.append(p, q, b);
+  }
+
+  function marcar() {
+    if (i >= marcados.length) return;
+    marcados[i].t = Math.round(relogio() * 10) / 10;
+    mostrar(i);
+    i++;
+    desenharPasso();
+  }
+
+  function desenharResultado() {
+    box.innerHTML = "";
+    const p = el("div");
+    p.innerHTML = "<b>Pronto!</b> Copie o texto abaixo e cole no lugar do bloco <b>const SLIDES = [ ... ];</b> do index.html.";
+    const ta = el("textarea");
+    ta.readOnly = true;
+    ta.value = "const SLIDES = " + JSON.stringify(marcados, null, 2) + ";";
+    const b = el("button", "", "Copiar");
+    b.type = "button";
+    b.addEventListener("click", async () => {
+      ta.select();
+      try { await navigator.clipboard.writeText(ta.value); b.textContent = "Copiado!"; }
+      catch (e) { document.execCommand("copy"); b.textContent = "Copiado!"; }
+    });
+    box.append(p, ta, b);
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.code === "Space" && e.target.tagName !== "TEXTAREA") { e.preventDefault(); marcar(); }
+  });
+
+  desenharPasso();
+}
+</script>
+</body>
+</html>

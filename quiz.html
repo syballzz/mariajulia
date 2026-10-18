@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* ================= CORES E FONTES (mude aqui) ================= */
+  :root {
+    --indigo: #484b7e;
+    --indigo-fundo: #34365f;
+    --creme: #f6f4df;
+    --rosa: #ff8fb8;
+    --fonte-cima: 'Bebas Neue', 'Oswald', Impact, sans-serif;
+    --fonte-baixo: 'Cinzel', 'Times New Roman', Georgia, serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--indigo-fundo); color: var(--creme);
+    font-family: var(--fonte-baixo); -webkit-font-smoothing: antialiased;
+    min-height: 100dvh;
+  }
+
+  main {
+    min-height: 100dvh; display: flex; flex-direction: column; align-items: center;
+    gap: 18px;
+    padding: max(60px, calc(env(safe-area-inset-top) + 46px)) 20px max(36px, env(safe-area-inset-bottom));
+  }
+
+  .voltar {
+    position: fixed; z-index: 5; top: max(14px, env(safe-area-inset-top)); left: max(14px, env(safe-area-inset-left));
+    font-family: var(--fonte-baixo); font-weight: 700; font-size: .8rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--creme); text-decoration: none; opacity: .85; padding: 8px 10px;
+  }
+  .voltar:hover, .voltar:focus-visible { opacity: 1; text-decoration: underline; outline: none; }
+
+  #progresso { font-size: .76rem; letter-spacing: .14em; text-transform: uppercase; color: #cfcdef; }
+
+  /* ================= IMAGEM ================= */
+  figure {
+    width: min(280px, 72vw); aspect-ratio: 4 / 3;
+    border-radius: 18px; overflow: hidden; background: var(--indigo);
+    box-shadow: 0 16px 36px rgba(10, 9, 35, .4);
+  }
+  figure img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  figure .sem-foto {
+    width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 16px; font-size: .78rem; line-height: 1.5; color: var(--creme);
+  }
+
+  /* ================= PERGUNTA ================= */
+  h1 {
+    font-family: var(--fonte-cima); font-weight: 400; text-transform: uppercase;
+    font-size: clamp(1.5rem, 6.5vw, 2.1rem); line-height: 1.15; text-align: center;
+    max-width: 30ch; text-wrap: balance;
+  }
+
+  /* ================= OPÇÕES ================= */
+  #opcoes { display: flex; flex-direction: column; gap: 10px; width: min(360px, 90vw); }
+  .opcao {
+    font-family: var(--fonte-baixo); font-weight: 700; font-size: .92rem;
+    background: var(--creme); color: var(--indigo); border: 0; border-radius: 14px;
+    padding: 14px 18px; text-align: left; cursor: pointer;
+    box-shadow: 0 6px 16px rgba(10, 9, 35, .22);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .opcao:hover, .opcao:focus-visible { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(10, 9, 35, .3); outline: none; }
+  .opcao:active { transform: translateY(0); }
+
+  /* ================= MENSAGEM DE ERRO ================= */
+  #erro {
+    position: fixed; inset: 0; z-index: 10; display: none; align-items: center; justify-content: center;
+    background: rgba(24, 24, 54, .85); padding: 24px;
+  }
+  #erro.mostra { display: flex; }
+  #erro .cartao {
+    background: var(--creme); color: var(--indigo); border-radius: 22px; padding: 30px 26px;
+    text-align: center; max-width: 320px; box-shadow: 0 24px 60px rgba(8, 9, 30, .5);
+  }
+  #erro h2 { font-family: var(--fonte-cima); font-weight: 400; text-transform: uppercase; font-size: 1.6rem; }
+  #erro p { margin-top: 12px; font-size: .92rem; line-height: 1.5; }
+  #erro button {
+    margin-top: 20px; font-family: var(--fonte-baixo); font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase; font-size: .8rem; padding: 12px 22px; border-radius: 999px; cursor: pointer;
+    background: var(--indigo); color: var(--creme); border: 2px solid var(--indigo);
+  }
+
+  /* ================= TELA FINAL ================= */
+  #final {
+    display: none; flex-direction: column; align-items: center; gap: 20px; text-align: center;
+    width: 100%;
+  }
+  #final.mostra { display: flex; }
+  #final figure { width: min(320px, 82vw); aspect-ratio: 3 / 4; border-radius: 22px; }
+  #final p {
+    font-family: var(--fonte-cima); font-weight: 400; text-transform: uppercase;
+    font-size: clamp(1.6rem, 7vw, 2.4rem); line-height: 1.15; max-width: 22ch; text-wrap: balance;
+    color: var(--rosa);
+  }
+  #final a {
+    font-family: var(--fonte-baixo); font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    font-size: .8rem; padding: 12px 24px; border-radius: 999px; text-decoration: none;
+    background: transparent; color: var(--creme); border: 2px solid var(--creme);
+  }
+  #final a:hover, #final a:focus-visible { background: var(--creme); color: var(--indigo); outline: none; }
+
+  #pergunta.escondida { display: none; }
+</style>
+</head>
+
+<body>
+<a class="voltar" href="inicio.html">← Início</a>
+
+<main>
+  <div id="pergunta">
+    <div style="display:flex; flex-direction:column; align-items:center; gap:18px;">
+      <p id="progresso"></p>
+      <figure id="figura"><img id="foto-pergunta" alt=""></figure>
+      <h1 id="texto-pergunta"></h1>
+      <div id="opcoes"></div>
+    </div>
+  </div>
+
+  <div id="final">
+    <figure><img id="foto-final" alt=""></figure>
+    <p id="texto-final"></p>
+    <a href="inicio.html">Voltar ao início</a>
+  </div>
+</main>
+
+<div id="erro">
+  <div class="cartao">
+    <h2>Ihh, errou</h2>
+    <p id="texto-erro"></p>
+    <button id="tentar-de-novo" type="button">Tentar de novo</button>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   CONFIGURAÇÕES
+   ===================================================================== */
+const PERGUNTAS = [
+  {
+    imagem: "fotos/quiz1.jpg",
+    pergunta: "Minha filha saudável e superdotada votou em?",
+    opcoes: ["22 (Flávio Bolsonaro)", "14 (Renan Santos)", "13 (Lula)", "70 (Drones do Augusto Cury)"],
+    certa: 2,
+    erro: "Garota, a pergunta é quem A SAUDÁVEL votou, tenta de novo com atenção."
+  },
+  {
+    imagem: "fotos/quiz2.jpg",
+    pergunta: "Qual vai ser o nome dos gêmeos?",
+    opcoes: ["Miguel e Bernardo", "Rafa e Justus", "Adalberto e Joseph", "Constantino e Hércules"],
+    certa: 1,
+    erro: "Poxa, seriam bons nomes, pena que são muito comuns. Tenta novamente."
+  },
+  {
+    imagem: "fotos/quiz3.jpg",
+    pergunta: "Quem é o melhor cantor/cantora do mundo?",
+    opcoes: ["Matuê 💕", "Mitski 🤔", "Melanie Martinez 😒", "Rita Lee 🤢"],
+    certa: 0,
+    erro: "Pelo amor de deus né amorzinho, a pergunta é quem é o MELHORRRR CANTORRR do mundo, rs."
+  },
+  {
+    imagem: "fotos/quiz4.jpg",
+    pergunta: "Quem é a garota mais bonita do mundo?",
+    opcoes: ["Maria Julia Parreira Borges", "MajuBatataDoce", "Ana Gacha", "SallyBorges"],
+    todasCertas: true
+  }
+];
+
+const FINAL = {
+  imagem: "fotos/quiz-final.jpg",
+  texto: "Sim, a garota mais bonita do mundo é você, Maria! Eu te amo!"
+};
+
+/* =====================================================================
+   MONTAGEM
+   ===================================================================== */
+const elProgresso = document.getElementById("progresso");
+const elFoto = document.getElementById("foto-pergunta");
+const elTexto = document.getElementById("texto-pergunta");
+const elOpcoes = document.getElementById("opcoes");
+const blocoPergunta = document.getElementById("pergunta");
+const blocoFinal = document.getElementById("final");
+const erroEl = document.getElementById("erro");
+const textoErro = document.getElementById("texto-erro");
+
+function fotoComAviso(img, caminho) {
+  img.onerror = () => {
+    const d = document.createElement("div");
+    d.className = "sem-foto";
+    d.textContent = "Coloque a foto em: " + caminho;
+    img.replaceWith(d);
+  };
+  img.src = caminho;
+}
+
+let atual = 0;
+
+function mostrarPergunta(i) {
+  atual = i;
+  const p = PERGUNTAS[i];
+
+  elProgresso.textContent = "Pergunta " + (i + 1) + " de " + PERGUNTAS.length;
+  elTexto.textContent = p.pergunta;
+
+  const figuraNova = document.createElement("figure");
+  figuraNova.id = "figura";
+  const img = document.createElement("img");
+  img.id = "foto-pergunta";
+  img.alt = "";
+  figuraNova.appendChild(img);
+  document.getElementById("figura").replaceWith(figuraNova);
+  fotoComAviso(img, p.imagem);
+
+  elOpcoes.innerHTML = "";
+  p.opcoes.forEach((texto, idx) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "opcao";
+    b.textContent = texto;
+    b.addEventListener("click", () => responder(p, idx));
+    elOpcoes.appendChild(b);
+  });
+}
+
+function responder(p, idx) {
+  if (p.todasCertas || idx === p.certa) {
+    const proxima = atual + 1;
+    if (proxima < PERGUNTAS.length) mostrarPergunta(proxima);
+    else mostrarFinal();
+  } else {
+    textoErro.textContent = p.erro;
+    erroEl.classList.add("mostra");
+  }
+}
+
+function mostrarFinal() {
+  blocoPergunta.classList.add("escondida");
+  blocoFinal.classList.add("mostra");
+  const img = document.getElementById("foto-final");
+  fotoComAviso(img, FINAL.imagem);
+  document.getElementById("texto-final").textContent = FINAL.texto;
+}
+
+document.getElementById("tentar-de-novo").addEventListener("click", () => {
+  erroEl.classList.remove("mostra");
+  mostrarPergunta(atual);
+});
+
+mostrarPergunta(0);
+</script>
+</body>
+</html>
