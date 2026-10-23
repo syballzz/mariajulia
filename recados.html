@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Recados</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+
+<style>
+  /* ================= CORES E FONTES (mude aqui) ================= */
+  :root {
+    --indigo: #484b7e;
+    --indigo-fundo: #34365f;
+    --creme: #f6f4df;
+    --rosa: #ff8fb8;
+    --fonte-cima: 'Bebas Neue', 'Oswald', Impact, sans-serif;
+    --fonte-baixo: 'Cinzel', 'Times New Roman', Georgia, serif;
+    --fonte-leitura: 'Lora', Georgia, 'Times New Roman', serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background:
+      radial-gradient(60% 40% at 50% 0%, rgba(255, 143, 184, .14), transparent 70%),
+      var(--indigo-fundo);
+    color: var(--creme);
+    font-family: var(--fonte-baixo); -webkit-font-smoothing: antialiased;
+    min-height: 100dvh;
+  }
+
+  main {
+    min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: clamp(22px, 4.5vh, 36px);
+    padding: max(60px, calc(env(safe-area-inset-top) + 46px)) 22px max(40px, env(safe-area-inset-bottom));
+    text-align: center;
+  }
+
+  .voltar {
+    position: fixed; z-index: 5; top: max(14px, env(safe-area-inset-top)); left: max(14px, env(safe-area-inset-left));
+    font-family: var(--fonte-baixo); font-weight: 700; font-size: .8rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--creme); text-decoration: none; opacity: .85; padding: 8px 10px;
+  }
+  .voltar:hover, .voltar:focus-visible { opacity: 1; text-decoration: underline; outline: none; }
+
+  h1 {
+    font-family: var(--fonte-cima); font-weight: 400; text-transform: uppercase;
+    font-size: clamp(1.9rem, 7.5vw, 2.7rem); line-height: 1.15; max-width: 16ch; text-wrap: balance;
+  }
+
+  /* ================= OPÇÕES ================= */
+  #opcoes {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+    width: min(380px, 92vw);
+  }
+  .opcao {
+    font-family: var(--fonte-baixo); font-weight: 700; font-size: .92rem;
+    background: var(--creme); color: var(--indigo); border: 0; border-radius: 14px;
+    padding: 18px 10px; cursor: pointer; text-transform: capitalize;
+    box-shadow: 0 6px 16px rgba(10, 9, 35, .22);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .opcao:hover, .opcao:focus-visible { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(10, 9, 35, .3); outline: none; }
+  .opcao:active { transform: translateY(0); }
+
+  /* ================= RESPOSTA ================= */
+  #resposta {
+    display: none; flex-direction: column; align-items: center; gap: 22px;
+    background: var(--creme); color: var(--indigo); border-radius: 24px;
+    padding: clamp(28px, 5vw, 44px) clamp(22px, 5.5vw, 48px);
+    max-width: min(680px, 94vw); width: 100%;
+    max-height: calc(100dvh - 160px); overflow-y: auto;
+    box-shadow: 0 20px 50px rgba(10, 9, 35, .4);
+  }
+  #resposta.mostra { display: flex; }
+
+  #resposta-texto {
+    font-family: var(--fonte-leitura); font-weight: 400; text-transform: none;
+    font-size: clamp(1.05rem, 2.2vw + .7rem, 1.3rem); line-height: 1.8;
+    text-align: left; text-wrap: pretty; align-self: stretch;
+  }
+
+  #resposta .botoes { display: flex; flex-direction: column; gap: 10px; width: 100%; align-items: center; }
+
+  #whatsapp {
+    font-family: var(--fonte-baixo); font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    font-size: .82rem; padding: 13px 22px; border-radius: 999px; cursor: pointer; text-decoration: none;
+    background: #25d366; color: #0b2e1a; border: 2px solid #25d366; display: inline-flex; align-items: center; gap: 8px;
+  }
+  #whatsapp:hover, #whatsapp:focus-visible { filter: brightness(1.08); outline: none; }
+  #whatsapp svg { width: 16px; height: 16px; fill: currentColor; }
+
+  #voltar-opcoes {
+    font-family: var(--fonte-baixo); font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    font-size: .76rem; padding: 10px 18px; border-radius: 999px; cursor: pointer;
+    background: transparent; color: var(--indigo); border: 2px solid var(--indigo);
+  }
+  #voltar-opcoes:hover, #voltar-opcoes:focus-visible { background: var(--indigo); color: var(--creme); outline: none; }
+
+  #opcoes.escondido { display: none; }
+</style>
+</head>
+
+<body>
+<a class="voltar" href="inicio.html">← Início</a>
+
+<main>
+  <h1 id="pergunta"></h1>
+
+  <div id="opcoes" role="group" aria-label="Como você tá se sentindo?"></div>
+
+  <div id="resposta">
+    <p id="resposta-texto"></p>
+    <div class="botoes">
+      <a id="whatsapp" href="#" target="_blank" rel="noopener" style="display:none;">
+        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.1-1.3A10 10 0 1 0 12 2zm5.8 14.2c-.2.6-1.3 1.2-1.8 1.3-.5.1-1 .1-1.7-.1-.4-.1-.9-.3-1.5-.6-2.7-1.2-4.4-3.9-4.6-4.1-.1-.2-1.1-1.5-1.1-2.8 0-1.3.7-2 1-2.3.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.4.2.5.7 1.8.8 1.9.1.1.1.3 0 .5-.1.2-.1.3-.3.5l-.4.5c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.5 1.5.3.1.5.1.6-.1.2-.2.7-.8.9-1.1.2-.3.4-.2.6-.1.2.1 1.5.7 1.8.8.3.1.5.2.5.3.1.2.1.6-.1 1.2z"/></svg>
+        <span id="whatsapp-rotulo">Avisar que to com fome</span>
+      </a>
+      <button id="voltar-opcoes" type="button">← Escolher outro sentimento</button>
+    </div>
+  </div>
+</main>
+
+<script>
+/* =====================================================================
+   CONFIGURAÇÕES
+   ===================================================================== */
+const CONFIG = {
+  pergunta: "Como a minha bebezinha tá?",
+
+  // Troque "[cole aqui o recado]" pelo texto que você quer que apareça em cada opção.
+  opcoes: [
+    { rotulo: "Mal",              texto: "Minha parreirinha, meu bem, se você tá lendo isso em um dia em que parece que nada tá dando certo, saiba que eu queria muito poder estar aí com você agora. Queria te puxar pra pertinho de mim, te abraçar bem forte, fazer carinho em você e te lembrar de que você não precisa guardar tudo pra você mesma. Se quiser chorar, chora, se quiser desabafar, eu vou te ouvir, e se não quiser falar nada, eu fico quietinho abraçadinho com você. Não precisa fingir que tá tudo bem comigo, minha bolinha, porque eu quero conhecer e cuidar de todas as suas versões, até mesmo daquela que nem você mesma tá conseguindo entender direito. Eu sei que não consigo resolver tudo o que te machuca, mas queria que você nunca esquecesse que tem alguém do seu lado que te ama muito e que queria poder deixar seus dias ruins um pouquinho menos dificeis. Queria que você pudesse se ver pelos meus olhos, nem que fosse só por um minutinho, pra entender por que eu sou tão apaixonado por você. Você é minha princesa, meu tudo, e eu queria poder nesse exato momento  te dar um beijão na boca, te apertar nos meus braços e ficar ali com você até você se sentir um pouquinho melhor. E por favor, nunca pense que precisa esconder sua tristeza de mim ou que vai ser um peso por não estar bem. Eu amo você, não só quando você tá sorrindo e brincando comigo, mas também quando tá quietinha, sensível ou precisando de um carinho a mais. Queria poder estar aí agora, minha vida. Te amo muito, minha gatinha." },
+    { rotulo: "Feliz",            texto: "Minha bolinha, se você está lendo isso feliz, espero que esteja com um sorrisão bem grande no rosto, já que um sorriso tão lindo igual ao seu, tem que ser mostrado pro mundo. Uma das coisas que eu mais amo nessa vida é saber que você tá bem e feliz. Você merece viver momentos lindos, realizar seus sonhos e ter milhares de motivos pra sorrir. E eu me sinto sortudo pra caralho por poder compartilhar a vida com você. Espero que eu ainda possa presenciar muitos e muitos desses sorrisos, princesa. Eu te amo demais!" },
+    { rotulo: "Autoestima baixa", texto: "Minha princesa. Você tem o corpo mais bonito de todos, além do cabelo que mais chama atenção. Sua franja, nem se fala... É a franja torta (que não tá tão torta mais) mais bonita que existe nesse mundo. Você é linda, especial e tem um jeitinho único que faz meu coração te escolher todos os dias. Mas, além da sua beleza, eu amo seu jeito, suas manias, seu sorriso e cada detalhe que faz você ser quem é. Você não precisa ser perfeita, nem mudar nada pra merecer ser amada. Eu sei que nem sempre você vai se sentir bonita, mas espero que nunca duvide do quanto é admirada e amada por mim. Você é minha bebezinha, e eu sou completamente apaixonado por você." },
+    { rotulo: "Preocupada",       texto: "Calma, minha vida. Respira um pouquinho e tenta não carregar o peso de tudo de uma vez. Eu sei que algumas coisas parecem enormes quando ficam passando pela nossa cabeça, mas você não precisa resolver tudo agora, nem ter todas as respostas hoje. Vai por partes princesa. Independentemente do que acontecer, vai ser resolvido, e se você não pode resolver, não tem porque se preocupar tanto. Não posso prometer que tudo será fácil, mas posso te lembrar de que você não precisa passar por tudo sem apoio. Eu te amo, princesa." },
+    { rotulo: "Sozinha",          texto: "Oiii meu amor, se você está se sentindo sozinha agora, queria que pudesse sentir meu abraço mesmo de longe. Às vezes, a gente pode estar cercada de pessoas e ainda sentir um vazio enorme, mas quero que você saiba que você é importante, que faz diferença neste mundo e que ocupa um lugar só seu no meu coração. Você é uma das melhores coisas que aconteceram na minha vida meu amor. Mesmo quando eu não puder estar pertinho de você, espero que esse recado te lembre de todo o carinho que tenho por você. Você é muito amada, minha fofuxa." },
+    {
+      rotulo: "Fome",
+      texto: "MINHA GORDINHA COM FOME AKAKAKAKKAKA, QUE NOVIDADE. Amor, plmds, vai comer alguma coisa. Não quero minha princesa passando fome, tá? Você merece um lanchinho gostoso, e, se possível, um monte de abraços e beijos de sobremesa. Se eu tiver do seu lado, provavelmente ia ficar te olhando comer e roubar um pedacinho, rs, e enchendo você de carinho. Agora vai se alimentar direitinho, porque eu preciso que minha menina fique bem. Te amo muito, esfomeadinha.",
+      whatsapp: true
+    }
+  ],
+
+  // Número de WhatsApp pra onde o botão de "fome" vai mandar ela.
+  // Formato: código do país + DDD + número, só números (exemplo: 5511999999999).
+  whatsappNumero: "+5564996267695",
+  whatsappMensagem: "amorrr, tô com muita fome, quero comer alguma coisa"
+};
+
+/* =====================================================================
+   MONTAGEM
+   ===================================================================== */
+document.getElementById("pergunta").textContent = CONFIG.pergunta;
+
+const elOpcoes = document.getElementById("opcoes");
+const elResposta = document.getElementById("resposta");
+const elRespostaTexto = document.getElementById("resposta-texto");
+const elWhatsapp = document.getElementById("whatsapp");
+const elH1 = document.getElementById("pergunta");
+
+CONFIG.opcoes.forEach((op) => {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "opcao";
+  b.textContent = op.rotulo;
+  b.addEventListener("click", () => mostrarResposta(op));
+  elOpcoes.appendChild(b);
+});
+
+function mostrarResposta(op) {
+  elRespostaTexto.textContent = op.texto;
+  elH1.style.display = "none";
+  elOpcoes.classList.add("escondido");
+
+  if (op.whatsapp) {
+    const numero = CONFIG.whatsappNumero.replace(/\D/g, "");
+    const texto = encodeURIComponent(CONFIG.whatsappMensagem);
+    elWhatsapp.href = "https://wa.me/" + numero + "?text=" + texto;
+    elWhatsapp.style.display = "inline-flex";
+  } else {
+    elWhatsapp.style.display = "none";
+  }
+
+  elResposta.classList.add("mostra");
+}
+
+document.getElementById("voltar-opcoes").addEventListener("click", () => {
+  elResposta.classList.remove("mostra");
+  elOpcoes.classList.remove("escondido");
+  elH1.style.display = "";
+});
+</script>
+</body>
+</html>

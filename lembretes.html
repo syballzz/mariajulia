@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lembretes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@600;700&family=Lora:ital,wght@0,400;0,500;1,400;1,500&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* ================= CORES E FONTES (mude aqui) ================= */
+  :root {
+    --indigo: #484b7e;
+    --indigo-fundo: #34365f;
+    --creme: #f6f4df;
+    --creme-sombra: #e6e2c7;
+    --rosa: #ff8fb8;
+    --fonte-cima: 'Bebas Neue', 'Oswald', Impact, sans-serif;
+    --fonte-baixo: 'Cinzel', 'Times New Roman', Georgia, serif;
+    --fonte-carta: 'Lora', Georgia, 'Times New Roman', serif;
+    --fonte-assinatura: 'Dancing Script', cursive;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background:
+      radial-gradient(60% 40% at 50% 0%, rgba(255, 143, 184, .14), transparent 70%),
+      var(--indigo-fundo);
+    color: var(--creme);
+    font-family: var(--fonte-baixo); -webkit-font-smoothing: antialiased;
+    min-height: 100dvh;
+  }
+
+  main {
+    min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: clamp(22px, 4.5vh, 34px);
+    padding: max(68px, calc(env(safe-area-inset-top) + 54px)) 22px max(40px, env(safe-area-inset-bottom));
+    text-align: center;
+  }
+
+  .voltar {
+    position: fixed; z-index: 5; top: max(14px, env(safe-area-inset-top)); left: max(14px, env(safe-area-inset-left));
+    font-family: var(--fonte-baixo); font-weight: 700; font-size: .8rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--creme); text-decoration: none; opacity: .85; padding: 8px 10px;
+  }
+  .voltar:hover, .voltar:focus-visible { opacity: 1; text-decoration: underline; outline: none; }
+
+  header p {
+    font-size: .76rem; letter-spacing: .18em; text-transform: uppercase; color: #cfcdef;
+  }
+
+  /* ================= CARTA ================= */
+  #pilha {
+    position: relative; width: min(480px, 92vw);
+  }
+
+  /* folhas por baixo, levemente giradas, pra dar sensação de papel empilhado */
+  #pilha::before, #pilha::after {
+    content: ""; position: absolute; inset: 0; border-radius: 4px 4px 14px 14px;
+    background: var(--creme-sombra);
+    box-shadow: 0 14px 30px rgba(10, 9, 35, .25);
+  }
+  #pilha::before { transform: rotate(-3.5deg) translateY(2px); z-index: 1; }
+  #pilha::after  { transform: rotate(2.5deg) translateY(4px); z-index: 0; background: #d9d5ba; }
+
+  #cartao {
+    position: relative; z-index: 2;
+    background: var(--creme); color: var(--indigo); border-radius: 4px 4px 14px 14px;
+    padding: clamp(40px, 7vw, 56px) clamp(26px, 6vw, 42px) clamp(32px, 6vw, 44px);
+    box-shadow: 0 22px 50px rgba(10, 9, 35, .4);
+    transition: opacity .35s ease, transform .35s ease;
+    text-align: left;
+  }
+  #cartao.saindo { opacity: 0; transform: translateY(8px) scale(.98); }
+
+  /* vincos de dobra, como se a carta tivesse sido dobrada em três */
+  #cartao::before {
+    content: ""; position: absolute; left: 8%; right: 8%; top: 33.3%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(72, 75, 126, .18) 20%, rgba(72, 75, 126, .18) 80%, transparent);
+  }
+  #cartao::after {
+    content: ""; position: absolute; left: 8%; right: 8%; top: 66.6%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(72, 75, 126, .18) 20%, rgba(72, 75, 126, .18) 80%, transparent);
+  }
+
+  /* selo de lacre no topo da carta */
+  #lacre {
+    position: absolute; top: 0; left: 50%; transform: translate(-50%, -52%);
+    width: 54px; height: 54px; border-radius: 50%; z-index: 3;
+    background: radial-gradient(circle at 34% 30%, #ffb3cf, var(--rosa) 60%, #e9699a 100%);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 14px rgba(10, 9, 35, .4), inset 0 -3px 5px rgba(0, 0, 0, .15);
+  }
+  #lacre svg { width: 22px; height: 22px; fill: var(--creme); }
+
+  #texto {
+    font-family: var(--fonte-carta); font-style: italic; font-weight: 400;
+    font-size: clamp(1.08rem, 2vw + .7rem, 1.32rem); line-height: 1.8;
+    text-wrap: pretty;
+  }
+
+  #assinatura {
+    margin-top: 18px; text-align: right;
+    font-family: var(--fonte-assinatura); font-weight: 700; color: var(--rosa);
+    font-size: clamp(1.3rem, 4vw, 1.6rem);
+  }
+
+  #contador {
+    font-size: .76rem; letter-spacing: .1em; color: #cfcdef;
+  }
+  #contador b { color: var(--rosa); font-weight: 700; }
+
+  #proximo {
+    font-family: var(--fonte-baixo); font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+    font-size: .82rem; padding: 13px 26px; border-radius: 999px; cursor: pointer;
+    background: transparent; color: var(--creme); border: 2px solid var(--creme);
+  }
+  #proximo:hover, #proximo:focus-visible { background: var(--creme); color: var(--indigo); outline: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    #cartao { transition: none; }
+  }
+</style>
+</head>
+
+<body>
+<a class="voltar" href="inicio.html">← Início</a>
+
+<main>
+  <header><p>Alguns textinhos</p></header>
+
+  <div id="pilha">
+    <div id="cartao">
+      <span id="lacre" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 21s-7-4.35-9.5-8.5C.5 8.7 2.6 5 6.2 5c2 0 3.4 1 5.8 3.4C14.4 6 15.8 5 17.8 5c3.6 0 5.7 3.7 3.7 7.5C19 16.65 12 21 12 21z"/></svg>
+      </span>
+      <p id="texto"></p>
+      <p id="assinatura">Eu te amo!</p>
+    </div>
+  </div>
+
+  <p id="contador"></p>
+
+  <button id="proximo" type="button">Próximo lembrete</button>
+</main>
+
+<script>
+/* =====================================================================
+   CONFIGURAÇÕES
+   ===================================================================== */
+const CONFIG = {
+  // Cole aqui os seus textos, um por linha, entre aspas e separados por vírgula.
+  // Com 2 textos, eles se alternam: XX:10 texto 1, XX:20 texto 2, XX:30 texto 1...
+  // Pode colocar mais textos depois, a lógica se ajusta sozinha à quantidade.
+  textos: [
+    "Meu amor, eu queria que você soubesse que eu te amo mais do que qualquer palavra conseguiria explicar. Você é uma das melhores coisas que já aconteceram na minha vida, e a cada dia que passa eu tenho mais certeza de que é você quem eu quero ao meu lado. Eu quero te amar nos dias bons e nos ruins, quando tudo estiver perfeito e quando as coisas estiverem dificeis pra caralho. Quero continuar escolhendo você todos os dias, cuidar de você, te fazer feliz e te mostrar que meu amor é verdadeiro. eu não sei o que o futuro nos reserva, mas sei que, enquanto eu estiver aqui, vou fazer de tudo para que você nunca duvide do quanto é amada por mim. Eu nunca quero deixar de te amar, porque você se tornou uma parte de mim que eu não consigo imaginar perder. E, se eu pudesse voltar no tempo e escolher tudo de novo, eu escolheria você em todas as vezes, sem pensar duas vezes. Eu te amo muito, minha princesa, e não importa quanto tempo passe, meu coração sempre vai ter um lugar que é só seu.",
+    "Eu te amo mesmo com você se odiando. Você nunca vai saber o quão importante e única você é para as outras pessoas, e se soubesse, tenho certeza que finalmente você entenderia o pq sou tão apaixonado por você. Mesmo que você nao se ame, espero q vc sempre lembre que tem alguém capaz de amar cada mínimo detalhe seu... Cada defeitozinho... Cada qualidade... Você é a melhor pessoa que algm poderia encontrar e eu sou mt grato por te ter, não só como amiga, mas sim como a minha mulher. Você é a pessoa que eu mais amo e queria que um dia você pudesse se amar da mesma forma na qual eu te amo. Se vc pudesse se ver da forma que eu te vejo, por ao menos 5 minutos, você entenderia completamente o motivo da minha paixão por você, que vai MUITO além da sua beleza. você é tudo pra mim, e eu espero, de verdade, que você um dia consiga ser tudo pra si mesma, e enquanto eu estiver com você, vou fazer questão de TODO dia te lembrar o quão especial você é, até chegar o dia em q vc vai perceber isso sozinha"
+  ],
+
+  // De quantos em quantos minutos o relógio troca de texto. Precisa dividir 60 certinho
+  // (10, 15, 20, 30...), porque a troca é sempre presa nos minutos redondos do relógio.
+  minutosPorTexto: 10
+};
+
+/* =====================================================================
+   LÓGICA DA ROTAÇÃO
+   O texto mostrado depende só da hora atual, travado nos minutos redondos:
+   em qualquer dia, às XX:10 mostra o texto 1, às XX:20 o texto 2, e assim
+   por diante. Não depende de quando a página foi aberta nem de nada salvo
+   no navegador.
+   ===================================================================== */
+const elTexto = document.getElementById("texto");
+const elCartao = document.getElementById("cartao");
+const elContador = document.getElementById("contador");
+const elAssinatura = document.getElementById("assinatura");
+
+function indicePeloRelogio(agora) {
+  const minuto = agora.getMinutes();
+  const bloco = Math.floor(minuto / CONFIG.minutosPorTexto);
+  const total = CONFIG.textos.length;
+  // bloco 0 (ex.: minutos 00-09) mostra o último texto da lista;
+  // bloco 1 (10-19) mostra o primeiro; e por aí vai.
+  return bloco === 0 ? (total - 1) % total : (bloco - 1) % total;
+}
+
+function proximaTroca(agora) {
+  const minuto = agora.getMinutes();
+  const bloco = Math.floor(minuto / CONFIG.minutosPorTexto);
+  const proximo = new Date(agora);
+  proximo.setSeconds(0, 0);
+  proximo.setMinutes((bloco + 1) * CONFIG.minutosPorTexto);
+  return proximo;
+}
+
+function formatarRestante(ms) {
+  const total = Math.max(0, Math.ceil(ms / 1000));
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return m + ":" + String(s).padStart(2, "0");
+}
+
+let indiceExibido = null;
+// guarda o índice que o RELÓGIO mandava da última vez que checamos — é só contra
+// isso que comparamos a cada segundo. Assim, um clique manual no botão (que muda
+// indiceExibido sem mudar este valor) não é desfeito no segundo seguinte.
+let ultimoIndiceDoRelogio = null;
+
+function mostrar(indice, comAnimacao) {
+  const trocar = () => {
+    if (!CONFIG.textos.length) {
+      elTexto.textContent = "Nenhum lembrete cadastrado ainda. Adicione na lista \"textos\" do código.";
+      elAssinatura.style.display = "none";
+    } else {
+      elTexto.textContent = CONFIG.textos[indice];
+      elAssinatura.style.display = "";
+    }
+    elCartao.classList.remove("saindo");
+  };
+
+  indiceExibido = indice;
+  if (comAnimacao) {
+    elCartao.classList.add("saindo");
+    setTimeout(trocar, 220);
+  } else {
+    trocar();
+  }
+}
+
+function verificarRelogio() {
+  if (!CONFIG.textos.length) return;
+  const agora = new Date();
+  const indiceCerto = indicePeloRelogio(agora);
+
+  if (indiceCerto !== ultimoIndiceDoRelogio) {
+    ultimoIndiceDoRelogio = indiceCerto;
+    mostrar(indiceCerto, true);
+  }
+
+  const restante = proximaTroca(agora) - agora;
+  elContador.innerHTML = "Próximo em <b>" + formatarRestante(restante) + "</b>";
+}
+
+// primeira exibição, sem animação
+if (CONFIG.textos.length) {
+  ultimoIndiceDoRelogio = indicePeloRelogio(new Date());
+  mostrar(ultimoIndiceDoRelogio, false);
+} else {
+  mostrar(0, false);
+}
+verificarRelogio();
+setInterval(verificarRelogio, 1000);
+
+// o botão adianta o texto na hora; na virada do próximo minuto redondo o relógio
+// retoma o controle, então nunca fica desalinhado de verdade por muito tempo.
+document.getElementById("proximo").addEventListener("click", () => {
+  if (!CONFIG.textos.length) return;
+  const proximo = (indiceExibido + 1) % CONFIG.textos.length;
+  mostrar(proximo, true);
+});
+</script>
+</body>
+</html>
